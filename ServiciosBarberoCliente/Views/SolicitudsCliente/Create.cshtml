@@ -1,0 +1,114 @@
+﻿@model ServiciosBarberoCliente.Models.Solicitud
+
+@{
+    ViewData["Title"] = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Create</h1>
+
+<h4>Solicitud</h4>
+<hr />
+<div class="row">
+    <!-- Columna izquierda para el mapa -->
+    <div class="col-md-6">
+        <div id="map" style="height: 400px; width: 100%;"></div>
+    </div>
+
+    <!-- Columna derecha para el formulario -->
+    <div class="col-md-6">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="IdCliente" class="control-label"></label>
+                <select asp-for="IdCliente" class="form-control" asp-items="ViewBag.IdCliente"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdBarbero" class="control-label"></label>
+                <select asp-for="IdBarbero" class="form-control" asp-items="ViewBag.IdBarbero"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="Dirección" class="control-label"></label>
+                <input asp-for="Dirección" id="direccion-input" class="form-control" />
+                <span asp-validation-for="Dirección" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Fecha" class="control-label"></label>
+                <input asp-for="Fecha" class="form-control" />
+                <span asp-validation-for="Fecha" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Descripcion" class="control-label"></label>
+                <input asp-for="Descripcion" class="form-control" />
+                <span asp-validation-for="Descripcion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Precio" class="control-label"></label>
+                <input asp-for="Precio" class="form-control" />
+                <span asp-validation-for="Precio" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDk_6YpNpeASBHg_kW6F92G_6YoMacuMH8&libraries=places&callback=initMap"></script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+<script type="text/javascript">
+    let map;
+    let geocoder;
+    let autocomplete;
+
+    function initMap() {
+        // Coordenadas de Medellín, Colombia
+        const medellin = { lat: 6.2442, lng: -75.5812 };
+
+        // Inicializa el mapa centrado en Medellín
+        map = new google.maps.Map(document.getElementById("map"), {
+            zoom: 12,
+            center: medellin,
+        });
+
+        geocoder = new google.maps.Geocoder();
+
+        // Inicializa el autocompletado de la dirección
+        const direccionInput = document.getElementById("direccion-input");
+        autocomplete = new google.maps.places.Autocomplete(direccionInput);
+
+        // Cuando el usuario selecciona una dirección del autocompletado
+        autocomplete.addListener('place_changed', function () {
+            let place = autocomplete.getPlace();
+            if (place.geometry) {
+                map.setCenter(place.geometry.location);
+                new google.maps.Marker({
+                    map: map,
+                    position: place.geometry.location,
+                });
+            }
+        });
+    }
+
+    function geocodeAddress(address) {
+        geocoder.geocode({ address: address }, function (results, status) {
+            if (status === "OK") {
+                map.setCenter(results[0].geometry.location);
+                new google.maps.Marker({
+                    map: map,
+                    position: results[0].geometry.location,
+                });
+            } else {
+                alert("Geocode no tuvo éxito debido a: " + status);
+            }
+        });
+    }
+</script>
