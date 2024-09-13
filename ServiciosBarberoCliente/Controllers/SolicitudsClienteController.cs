@@ -64,7 +64,7 @@ namespace ServiciosBarberoCliente.Controllers
             {
                 _context.Add(solicitud);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Create));
             }
             ViewData["IdBarbero"] = new SelectList(_context.Usuarios, "Id", "Nombre", solicitud.IdBarbero);
             ViewData["IdCliente"] = new SelectList(_context.Usuarios, "Id", "Nombre", solicitud.IdCliente);
