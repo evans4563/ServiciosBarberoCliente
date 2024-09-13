@@ -32,6 +32,15 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item">
+                            @Html.AntiForgeryToken()
+                            <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm" class="form-inline">
+                                <button type="submit" class="btn btn-outline-danger my-2 my-sm-0">Cerrar sesión</button>
+                            </form>
+                        </li>
+                    </ul>
+
                 </div>
             </div>
         </nav>

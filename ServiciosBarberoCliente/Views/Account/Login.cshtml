@@ -1,0 +1,39 @@
+﻿@model ServiciosBarberoCliente.Models.LoginViewModel
+
+@{
+    ViewData["Title"] = "Login";
+}
+
+<h1 class="text-center my-4">Login</h1>
+
+<div class="container p-4" style="border-radius: 10px; background-color: dimgray;">
+    <div style="background-color: white; padding: 20px; border-radius: 10px;">
+        <form asp-action="Login" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Correo" class="form-label"></label>
+                <input asp-for="Correo" class="form-control" placeholder="Ingrese su correo electrónico" />
+                <span asp-validation-for="Correo" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Contrasena" class="form-label"></label>
+                <input asp-for="Contrasena" type="password" class="form-control" placeholder="Ingrese su contraseña" />
+                <span asp-validation-for="Contrasena" class="text-danger"></span>
+            </div>
+
+            <div class="text-center">
+                <input type="submit" value="Iniciar Sesión" class="btn btn-primary" />
+            </div>
+        </form>
+
+        <div class="text-center mt-3">
+            <p>¿No tienes una cuenta? <a asp-controller="Account" asp-action="Register">Regístrate aquí</a></p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

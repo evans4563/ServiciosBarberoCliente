@@ -2,20 +2,24 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ServiciosBarberoCliente.Models;
+using System.Security.Claims;
 
 namespace ServiciosBarberoCliente.Controllers
 {
     public class SolicitudsClienteController : Controller
     {
         private readonly DirectBarber1Context _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public SolicitudsClienteController(DirectBarber1Context context)
+        public SolicitudsClienteController(DirectBarber1Context context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         // GET: SolicitudsCliente
@@ -32,7 +36,7 @@ namespace ServiciosBarberoCliente.Controllers
             {
                 return NotFound();
             }
-
+            
             var solicitud = await _context.Solicituds
                 .Include(s => s.IdBarberoNavigation)
                 .Include(s => s.IdClienteNavigation)
@@ -49,25 +53,34 @@ namespace ServiciosBarberoCliente.Controllers
         public IActionResult Create()
         {
             ViewData["IdBarbero"] = new SelectList(_context.Usuarios, "Id", "Nombre");
-            ViewData["IdCliente"] = new SelectList(_context.Usuarios, "Id", "Nombre");
             return View();
         }
 
         // POST: SolicitudsCliente/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdSolicitud,IdCliente,IdBarbero,Dirección,Fecha,Descripcion,Precio")] Solicitud solicitud)
+        public async Task<IActionResult> Create([Bind("IdSolicitud,IdBarbero,Dirección,Fecha,Descripcion,Precio")] Solicitud solicitud)
         {
             if (ModelState.IsValid)
             {
+                // Obtener el ID del usuario autenticado
+                var userIdString = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (int.TryParse(userIdString, out var userId))
+                {
+                    solicitud.IdCliente = userId;
+                }
+                else
+                {
+                    // Manejar el caso en que el ID del usuario no se puede obtener
+                    ModelState.AddModelError(string.Empty, "No se pudo obtener el ID del usuario.");
+                    return View(solicitud);
+                }
+
                 _context.Add(solicitud);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Create));
             }
             ViewData["IdBarbero"] = new SelectList(_context.Usuarios, "Id", "Nombre", solicitud.IdBarbero);
-            ViewData["IdCliente"] = new SelectList(_context.Usuarios, "Id", "Nombre", solicitud.IdCliente);
             return View(solicitud);
         }
 
@@ -90,8 +103,6 @@ namespace ServiciosBarberoCliente.Controllers
         }
 
         // POST: SolicitudsCliente/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("IdSolicitud,IdCliente,IdBarbero,Dirección,Fecha,Descripcion,Precio")] Solicitud solicitud)

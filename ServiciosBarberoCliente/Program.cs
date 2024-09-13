@@ -1,19 +1,32 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using ServiciosBarberoCliente.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<DirectBarber1Context>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ConexionSQL")));
-// Add services to the container.
+// Configuración de la base de datos
+builder.Services.AddDbContext<DirectBarber1Context>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ConexionSQL")));
+
+// Configuración de la autenticación basada en cookies
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login"; // Ruta para iniciar sesión
+        options.LogoutPath = "/Account/Logout"; // Ruta para cerrar sesión
+    });
+
+// Registro de IHttpContextAccessor para acceder al contexto HTTP en los controladores
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configuración del pipeline de la aplicación
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -22,10 +35,12 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthorization();
+app.UseAuthentication(); // Habilitar autenticación
+app.UseAuthorization();  // Habilitar autorización
 
+// Cambiar la ruta predeterminada para iniciar desde la página de Login
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.Run();
